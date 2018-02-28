@@ -50,6 +50,10 @@ def draw_perm_reps(data_1, data_2, func, size=1):
 #1 Bootstrap samples = same length for datasets but values randomly replaced
 bs_sample = np.random.choice(data, size=len(data))
 
+#1D bootstrap reps:
+def bootstrap_replicate_1d(data, func):
+    return func(np.random.choice(data, size=len(data)))
+
 #Bootstrap replicates (statistic performed on bootstrap)
 def draw_bs_reps(data, func, size=1):
     """Draw bootstrap replicates."""
