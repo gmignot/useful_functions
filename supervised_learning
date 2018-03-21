@@ -427,6 +427,7 @@ from sklearn.model_selection import GridSearchCV
 
 # Setup the hyperparameter grid. For logisitc Regression, the hyperparam is called C
 #This parameter gives the limit to stretch parameters so that we avoid over-fitting !
+#logreg has another param which is "penalty" but not used here for the example
 c_space = np.logspace(-5, 8, 15)
 param_grid = {'C': c_space}
 
@@ -473,5 +474,71 @@ print("Tuned Decision Tree Parameters: {}".format(tree_cv.best_params_))
 print("Best score is {}".format(tree_cv.best_score_))
 
 
+#--------------------------------------KEEPING AN HOLD-OUT SET ---------------------------------------------
 
+#   We need to evaluate how well our model can perform on data it has NEVER seen before !!!
+#   We'll therefore split data into train and hold-out set. 
+#   After haveing found the best hyperparameters, we can look at the score on the hold-out set
+
+# Import necessary modules
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV
+
+# Create the hyperparameter grid
+c_space = np.logspace(-5, 8, 15)
+param_grid = {'C': c_space, 'penalty': ['l1', 'l2']}
+
+# Instantiate the logistic regression classifier: logreg
+logreg = LogisticRegression()
+
+# Create train and test sets (test= hold-out)
+X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.4,random_state=42)
+
+# Instantiate the GridSearchCV object: logreg_cv
+logreg_cv = GridSearchCV(logreg,param_grid,cv=5)
+
+# Fit it to the training data
+logreg_cv.fit(X_train,y_train)
+
+# Print the optimal parameters and best score
+print("Tuned Logistic Regression Parameter: {}".format(logreg_cv.best_params_))
+print("Tuned Logistic Regression Accuracy: {}".format(logreg_cv.best_score_))
+
+
+
+#------------------------- HOLD-OUT Set on ELASTIC-NET REGRESSION ---------------------------------
+#   Elastic Net is a mix of lasso and ridge
+#   There is a parameter l1_ratio, which gives the proportion of l1 and l2 penalties (used as hyperparameters)
+#   l1_ratio = 1 means L1 penalty only. Let's use gridsearchcv to see which is the best ratio.
+
+# Import necessary modules
+from sklearn.linear_model import ElasticNet
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import train_test_split
+
+# Create train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.4,random_state=42)
+
+# Create the hyperparameter grid (just l1_ratio, between 0 and 1)
+l1_space = np.linspace(0, 1, 30)
+param_grid = {'l1_ratio': l1_space}
+
+# Instantiate the ElasticNet regressor: elastic_net
+elastic_net = ElasticNet()
+
+# Setup the GridSearchCV object: gm_cv
+gm_cv = GridSearchCV(elastic_net, param_grid, cv=5)
+
+# Fit it to the training data
+gm_cv.fit(X_train,y_train)
+
+# Predict on the test set and compute metrics
+y_pred = gm_cv.predict(X_test)
+r2 = gm_cv.score(X_test,y_test)
+mse = mean_squared_error(y_test, y_pred)
+print("Tuned ElasticNet l1 ratio: {}".format(gm_cv.best_params_))
+print("Tuned ElasticNet R squared: {}".format(r2))
+print("Tuned ElasticNet MSE: {}".format(mse))
 
